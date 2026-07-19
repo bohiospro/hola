@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Diaria — $4,000</title>
+<style>
+  :root{
+    --ink:#1c1917;
+    --cream:#faf6ee;
+    --amber:#d98e04;
+    --amber-dark:#a86a02;
+    --sage:#4b7f52;
+    --red:#b33f3f;
+    --line:#e5ddcc;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding-bottom:60px;
+  }
+  header{
+    background:var(--ink);
+    color:var(--cream);
+    padding:22px 20px 26px;
+    position:relative;
+  }
+  header h1{
+    font-family: "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
+    font-weight:800;
+    font-size:26px;
+    letter-spacing:0.5px;
+    margin:0 0 4px;
+    text-transform:uppercase;
+  }
+  header p{ margin:0; opacity:0.75; font-size:13px; }
+
+  .candle-wrap{ margin:18px 20px 0; background:#fff; border-radius:14px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .candle-row{ display:flex; align-items:flex-end; gap:14px; }
+  .candle-body{ width:34px; height:110px; background:#eee6d6; border-radius:6px 6px 3px 3px; position:relative; overflow:hidden; border:1px solid var(--line); }
+  .candle-fill{ position:absolute; bottom:0; left:0; right:0; background:linear-gradient(180deg, var(--amber), var(--amber-dark)); height:0%; transition:height 0.4s ease; }
+  .candle-stats{flex:1;}
+  .goal-line{ display:flex; justify-content:space-between; font-size:13px; color:#6b6255; margin-bottom:2px; }
+  .goal-amount{ font-size:32px; font-weight:800; line-height:1.1; }
+  .goal-amount span{font-size:16px;font-weight:600;color:#8a8071;}
+  .bar-track{ margin-top:8px; height:8px; background:#eee6d6; border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; background:var(--amber); width:0%; transition:width 0.4s ease; }
+
+  .summary-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin:14px 20px 0; }
+  .summary-card{ background:#fff; border-radius:12px; padding:10px 6px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  .summary-card .num{font-size:18px;font-weight:800;}
+  .summary-card .lbl{font-size:9.5px;color:#8a8071;text-transform:uppercase;letter-spacing:0.2px;}
+
+  h2.section-title{ margin:24px 20px 8px; font-size:13px; text-transform:uppercase; letter-spacing:0.6px; color:#8a8071; }
+
+  .visit-form{ margin:0 20px; background:#fff; border-radius:14px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  .visit-form input[type="text"]{ width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); font-size:15px; margin-bottom:8px; }
+  .loc-row{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .loc-btn{ background:var(--ink); color:#fff; border:none; padding:9px 14px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .loc-status{ font-size:12px; color:#8a8071; flex:1; }
+  .loc-status.ok{color:var(--sage);font-weight:600;}
+  .loc-status.err{color:var(--red);}
+  .loc-open-link{ display:inline-block; margin-top:4px; margin-bottom:8px; font-size:12.5px; color:var(--amber-dark); }
+
+  .draft-product{ padding:10px 0; border-bottom:1px solid var(--line); }
+  .draft-product:last-of-type{border-bottom:none;}
+  .dp-main{ display:flex; align-items:center; justify-content:space-between; }
+  .dp-main .name{font-size:14px;font-weight:700;}
+  .dp-main .meta{font-size:11.5px;color:#8a8071;}
+  .stepper{display:flex;align-items:center;gap:10px;}
+  .stepper button{ width:30px;height:30px; border-radius:50%; border:none; background:var(--ink); color:#fff; font-size:16px; line-height:1; cursor:pointer; }
+  .stepper.small button{width:26px;height:26px;font-size:14px;}
+  .stepper button:active{background:var(--amber-dark);}
+  .qty{min-width:20px;text-align:center;font-weight:800;font-size:15px;}
+
+  .color-toggle{ margin-top:8px; background:none; border:none; color:var(--amber-dark); font-size:12.5px; font-weight:700; padding:0; cursor:pointer; }
+  .color-grid{ margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+  .color-row{ display:flex; align-items:center; justify-content:space-between; padding-left:8px; }
+  .color-row .cname{ font-size:13px; color:#4d463b; }
+  .loose-row{ display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-left:8px; }
+  .loose-row .cname{font-size:13px;color:#4d463b;}
+
+  .save-visit-btn{ width:100%; margin-top:14px; padding:13px; border:none; border-radius:10px; background:var(--sage); color:#fff; font-weight:800; font-size:15px; cursor:pointer; }
+  .no-sale-btn{ width:100%; margin-top:8px; padding:12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); font-weight:700; font-size:14px; cursor:pointer; }
+
+  .client-list{margin:0 20px;display:flex;flex-direction:column;gap:8px;}
+  .client-card{ background:#fff; border-radius:12px; padding:12px 14px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  .client-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .client-name{font-weight:800;font-size:15px;}
+  .client-empty{color:#a89f8e;font-style:italic;font-size:13px;}
+  .client-ganancia{font-weight:800;color:var(--sage);font-size:14px;white-space:nowrap;}
+  .client-map{ font-size:12px; color:var(--amber-dark); text-decoration:none; display:inline-block; margin-top:2px; }
+  .client-items{ margin-top:6px; font-size:13px; color:#4d463b; line-height:1.5; }
+  .client-del{ background:none;border:none;color:#b8afa0;font-size:18px;cursor:pointer;padding:0 4px; }
+  .no-clients{ text-align:center; color:#a89f8e; font-size:13px; padding:20px; }
+
+  .delivery-group{ margin:0 20px 10px; background:#fff; border-radius:14px; padding:6px 16px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  .delivery-group h3{ font-size:13.5px; margin:10px 0 4px; }
+  .delivery-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .delivery-row:last-child{border-bottom:none;}
+  .delivery-row .qty-badge{ font-weight:800; background:var(--cream); border-radius:8px; padding:2px 10px; }
+
+  .route-btn{ display:block; width:calc(100% - 40px); margin:0 20px 20px; padding:13px; border:none; border-radius:10px; background:var(--amber-dark); color:#fff; font-weight:800; font-size:14.5px; cursor:pointer; text-align:center; text-decoration:none; }
+
+  .footer-actions{ margin:24px 20px 0; display:flex; gap:10px; }
+  .footer-actions button{ flex:1; padding:12px; border-radius:10px; border:none; font-weight:700; font-size:14px; cursor:pointer; }
+  #resetBtn{background:#fff;color:var(--red);border:1px solid var(--line);}
+  #downloadBtn{background:var(--amber);color:#fff;}
+  #saveNote{ text-align:center; font-size:11px; color:#a89f8e; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Meta del día</h1>
+  <p id="todayLabel"></p>
+</header>
+
+<div class="candle-wrap">
+  <div class="candle-row">
+    <div class="candle-body"><div class="candle-fill" id="candleFill"></div></div>
+    <div class="candle-stats">
+      <div class="goal-line"><span>Ganancia de hoy</span><span id="pctLabel">0%</span></div>
+      <div class="goal-amount"><span>$</span><span id="totalGanancia">0</span> <span style="font-size:16px;">/ $4,000</span></div>
+      <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="summary-row">
+  <div class="summary-card"><div class="num" id="visitCount">0</div><div class="lbl">Visitados</div></div>
+  <div class="summary-card"><div class="num" id="unitsSold">0</div><div class="lbl">Unidades</div></div>
+  <div class="summary-card"><div class="num" id="restante">4,000</div><div class="lbl">Falta</div></div>
+  <div class="summary-card"><div class="num" id="conversion">0%</div><div class="lbl">Conversión</div></div>
+</div>
+
+<h2 class="section-title">Nueva visita</h2>
+<div class="visit-form">
+  <input type="text" id="clientName" placeholder="Nombre del cliente">
+
+  <div class="loc-row">
+    <button class="loc-btn" onclick="getLocation()">📍 Usar mi ubicación</button>
+    <span class="loc-status" id="locStatus">Sin ubicación</span>
+  </div>
+  <a href="#" class="loc-open-link" id="openLocLink" style="display:none;" target="_blank">Ver esta ubicación en el mapa</a>
+
+  <div id="draftProducts"></div>
+  <button class="save-visit-btn" onclick="saveVisit()">Guardar visita</button>
+  <button class="no-sale-btn" onclick="saveVisit(true)">Visita sin venta</button>
+</div>
+
+<h2 class="section-title">Clientes visitados hoy</h2>
+<div class="client-list" id="clientList"></div>
+
+<h2 class="section-title">Lista de entrega (total del día)</h2>
+<div id="deliveryWrap"></div>
+<a href="#" class="route-btn" id="routeBtn" onclick="openRoute(event)">🚚 Crear ruta de entrega con todos los clientes</a>
+
+<div class="footer-actions">
+  <button id="downloadBtn" onclick="downloadSummary()">⬇️ Descargar resumen</button>
+  <button id="resetBtn" onclick="resetDay()">Reiniciar día</button>
+</div>
+<div id="saveNote">Tus datos de hoy se guardan solos en este dispositivo</div>
+
+<script>
+const COLORS = ['Blanco','Azul','Amarillo','Rojo','Rosado','Verde','Morado','Negro'];
+
+const PRODUCTS = [
+  { id:'velon_cerv', name:'Velón cerv caja', boxGanancia:110, unitsPerBox:24, hasColors:true },
+  { id:'vela10', name:'Vela 10 paquete', boxGanancia:25 },
+  { id:'alt_fino', name:'Alt fino caja', boxGanancia:300, unitsPerBox:12, hasColors:true },
+  { id:'escoba', name:'Escoba Reyna caja', boxGanancia:300, unitsPerBox:12, hasLoose:true },
+  { id:'candado', name:'Candado display', boxGanancia:220 },
+  { id:'alt_grueso', name:'Alt grueso caja', boxGanancia:175, unitsPerBox:12, hasColors:true },
+  { id:'capa', name:'Capa de enrole paquete', boxGanancia:50 },
+  { id:'cigarro', name:'Cigarro paquete', boxGanancia:70 },
+  { id:'vela5', name:'Vela 5 paquete', boxGanancia:23 },
+];
+PRODUCTS.forEach(p => { if(p.unitsPerBox) p.unitGanancia = p.boxGanancia / p.unitsPerBox; });
+
+function todayKey(){
+  const d = new Date();
+  return 'ventas:' + d.toISOString().slice(0,10);
+}
+
+function emptyItem(p){
+  if(p.hasColors){
+    const colors = {};
+    COLORS.forEach(c => colors[c] = 0);
+    return { box:0, colors };
+  }
+  if(p.hasLoose){ return { box:0, loose:0 }; }
+  return 0;
+}
+
+function freshDraft(){
+  const items = {};
+  PRODUCTS.forEach(p => items[p.id] = emptyItem(p));
+  return { items, lat:null, lng:null };
+}
+
+let state = { visits: [] };
+let draft = freshDraft();
+let colorPanelsOpen = {};
+
+function itemGanancia(p, data){
+  if(typeof data === 'number') return data * p.boxGanancia;
+  let total = (data.box||0) * p.boxGanancia;
+  if(data.colors) Object.values(data.colors).forEach(q => total += (q||0) * p.unitGanancia);
+  if(typeof data.loose === 'number') total += data.loose * p.unitGanancia;
+  return total;
+}
+function itemUnits(p, data){
+  if(typeof data === 'number') return data;
+  let total = (data.box||0);
+  if(data.colors) Object.values(data.colors).forEach(q => total += (q||0));
+  if(typeof data.loose === 'number') total += data.loose;
+  return total;
+}
+function itemIsEmpty(p, data){ return itemUnits(p, data) <= 0; }
+function describeItem(p, data){
+  const lines = [];
+  if(typeof data === 'number'){
+    if(data > 0) lines.push(`${data} × ${p.name}`);
+    return lines;
+  }
+  if(data.box > 0) lines.push(`${data.box} caja${data.box>1?'s':''} ${p.name}`);
+  if(data.colors){
+    COLORS.forEach(c => { if(data.colors[c] > 0) lines.push(`${data.colors[c]} pza ${c} (${p.name})`); });
+  }
+  if(data.loose > 0) lines.push(`${data.loose} pza${data.loose>1?'s':''} suelta(s) ${p.name}`);
+  return lines;
+}
+function findProduct(id){ return PRODUCTS.find(p => p.id === id); }
+
+// --- Ubicación ---
+function locationQuery(v){
+  if(v.lat && v.lng) return `${v.lat},${v.lng}`;
+  return null;
+}
+function locationUrl(v){
+  const q = locationQuery(v);
+  if(!q) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+
+function getLocation(){
+  const statusEl = document.getElementById('locStatus');
+  if(!navigator.geolocation){
+    statusEl.textContent = 'Este navegador no soporta GPS.';
+    statusEl.className = 'loc-status err';
+    return;
+  }
+  statusEl.textContent = 'Buscando ubicación...';
+  statusEl.className = 'loc-status';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      draft.lat = pos.coords.latitude;
+      draft.lng = pos.coords.longitude;
+      statusEl.textContent = 'Ubicación guardada ✓';
+      statusEl.className = 'loc-status ok';
+      updateOpenLocLink();
+    },
+    (err) => {
+      let msg = 'No se pudo obtener la ubicación.';
+      if(err.code === 1) msg = 'Permiso de ubicación bloqueado. Este archivo debe abrirse desde una dirección https:// (no desde Descargas) para que el GPS funcione.';
+      if(err.code === 2) msg = 'No se pudo determinar tu posición ahora. Intenta de nuevo.';
+      if(err.code === 3) msg = 'Tardó demasiado en responder. Intenta de nuevo.';
+      statusEl.textContent = msg;
+      statusEl.className = 'loc-status err';
+    },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+}
+
+function updateOpenLocLink(){
+  const link = document.getElementById('openLocLink');
+  const url = locationUrl(draft);
+  if(url){
+    link.href = url;
+    link.style.display = 'inline-block';
+  } else {
+    link.style.display = 'none';
+  }
+}
+
+// --- Ruta de entrega ---
+function buildRouteUrl(){
+  const stops = state.visits.filter(v => locationQuery(v));
+  if(stops.length === 0) return null;
+  if(stops.length === 1) return locationUrl(stops[0]);
+  const destination = encodeURIComponent(locationQuery(stops[stops.length-1]));
+  const waypoints = stops.slice(0,-1).map(v => encodeURIComponent(locationQuery(v))).join('|');
+  return `https://www.google.com/maps/dir/?api=1&destination=${destination}&waypoints=${waypoints}&travelmode=driving`;
+}
+function openRoute(e){
+  e.preventDefault();
+  const url = buildRouteUrl();
+  if(!url){
+    alert('Todavía no tienes clientes con ubicación guardada hoy.');
+    return;
+  }
+  window.open(url, '_blank');
+}
+
+async function loadState(){
+  try{
+    const res = await window.storage.get(todayKey());
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      if(parsed && Array.isArray(parsed.visits)) state.visits = parsed.visits;
+    }
+  }catch(e){ /* sin datos guardados aun */ }
+  render();
+}
+async function saveState(){
+  try{ await window.storage.set(todayKey(), JSON.stringify(state)); }
+  catch(e){ console.error('No se pudo guardar', e); }
+}
+
+function changeBox(pid, delta){
+  if(typeof draft.items[pid] === 'number'){
+    draft.items[pid] = Math.max(0, draft.items[pid] + delta);
+  } else {
+    draft.items[pid].box = Math.max(0, (draft.items[pid].box||0) + delta);
+  }
+  renderDraftProducts();
+}
+function changeColor(pid, color, delta){
+  draft.items[pid].colors[color] = Math.max(0, (draft.items[pid].colors[color]||0) + delta);
+  renderDraftProducts();
+}
+function changeLoose(pid, delta){
+  draft.items[pid].loose = Math.max(0, (draft.items[pid].loose||0) + delta);
+  renderDraftProducts();
+}
+function toggleColorPanel(pid){
+  colorPanelsOpen[pid] = !colorPanelsOpen[pid];
+  renderDraftProducts();
+}
+
+function renderDraftProducts(){
+  const wrap = document.getElementById('draftProducts');
+  wrap.innerHTML = '';
+  PRODUCTS.forEach(p => {
+    const data = draft.items[p.id];
+    const boxQty = typeof data === 'number' ? data : (data.box||0);
+    const boxLabel = p.unitsPerBox ? `Caja completa (${p.unitsPerBox} unidades) · $${p.boxGanancia}` : `$${p.boxGanancia} de ganancia c/u`;
+
+    const div = document.createElement('div');
+    div.className = 'draft-product';
+
+    let html = `
+      <div class="dp-main">
+        <div>
+          <div class="name">${p.name}</div>
+          <div class="meta">${boxLabel}</div>
+        </div>
+        <div class="stepper">
+          <button onclick="changeBox('${p.id}', -1)">−</button>
+          <div class="qty">${boxQty}</div>
+          <button onclick="changeBox('${p.id}', 1)">+</button>
+        </div>
+      </div>
+    `;
+
+    if(p.hasColors){
+      const open = !!colorPanelsOpen[p.id];
+      html += `<button class="color-toggle" onclick="toggleColorPanel('${p.id}')">${open ? '▾ Ocultar colores' : '▸ Vender por color (pieza suelta, $'+p.unitGanancia.toFixed(2)+' c/u)'}</button>`;
+      if(open){
+        html += '<div class="color-grid">';
+        COLORS.forEach(c => {
+          const q = data.colors[c] || 0;
+          html += `
+            <div class="color-row">
+              <span class="cname">${c}</span>
+              <div class="stepper small">
+                <button onclick="changeColor('${p.id}','${c}', -1)">−</button>
+                <div class="qty">${q}</div>
+                <button onclick="changeColor('${p.id}','${c}', 1)">+</button>
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+      }
+    }
+
+    if(p.hasLoose){
+      html += `
+        <div class="loose-row">
+          <span class="cname">Piezas sueltas ($${p.unitGanancia.toFixed(2)} c/u)</span>
+          <div class="stepper small">
+            <button onclick="changeLoose('${p.id}', -1)">−</button>
+            <div class="qty">${data.loose||0}</div>
+            <button onclick="changeLoose('${p.id}', 1)">+</button>
+          </div>
+        </div>`;
+    }
+
+    div.innerHTML = html;
+    wrap.appendChild(div);
+  });
+}
+
+async function saveVisit(noSale){
+  const name = document.getElementById('clientName').value.trim() || 'Cliente sin nombre';
+  let items = {};
+  if(!noSale){
+    PRODUCTS.forEach(p => {
+      if(!itemIsEmpty(p, draft.items[p.id])) items[p.id] = draft.items[p.id];
+    });
+  }
+  const visit = {
+    id: Date.now().toString(),
+    name,
+    lat: draft.lat || null,
+    lng: draft.lng || null,
+    time: new Date().toISOString(),
+    items
+  };
+  state.visits.push(visit);
+  await saveState();
+
+  draft = freshDraft();
+  colorPanelsOpen = {};
+  document.getElementById('clientName').value = '';
+  document.getElementById('locStatus').textContent = 'Sin ubicación';
+  document.getElementById('locStatus').className = 'loc-status';
+  updateOpenLocLink();
+
+  render();
+}
+
+async function deleteVisit(id){
+  if(!confirm('¿Quitar esta visita de la lista de hoy?')) return;
+  state.visits = state.visits.filter(v => v.id !== id);
+  await saveState();
+  render();
+}
+async function resetDay(){
+  if(!confirm('¿Reiniciar el día? Se borrarán todas las visitas y ventas de hoy.')) return;
+  state.visits = [];
+  await saveState();
+  render();
+}
+
+function render(){
+  const label = new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('todayLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
+
+  renderDraftProducts();
+
+  let total = 0;
+  let units = 0;
+  const deliveryTotals = {};
+  PRODUCTS.forEach(p => deliveryTotals[p.id] = emptyItem(p));
+
+  state.visits.forEach(v => {
+    Object.keys(v.items).forEach(pid => {
+      const p = findProduct(pid);
+      const data = v.items[pid];
+      total += itemGanancia(p, data);
+      units += itemUnits(p, data);
+      if(typeof data === 'number'){
+        deliveryTotals[pid] += data;
+      } else {
+        deliveryTotals[pid].box += (data.box||0);
+        if(data.colors) COLORS.forEach(c => deliveryTotals[pid].colors[c] += (data.colors[c]||0));
+        if(typeof data.loose === 'number') deliveryTotals[pid].loose += data.loose;
+      }
+    });
+  });
+
+  const GOAL = 4000;
+  const pct = Math.min(100, Math.round((total / GOAL) * 100));
+  document.getElementById('totalGanancia').textContent = Math.round(total).toLocaleString('es-MX');
+  document.getElementById('pctLabel').textContent = pct + '%';
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('candleFill').style.height = pct + '%';
+  document.getElementById('unitsSold').textContent = units;
+  document.getElementById('restante').textContent = Math.max(0, Math.round(GOAL - total)).toLocaleString('es-MX');
+  document.getElementById('visitCount').textContent = state.visits.length;
+
+  const visitsWithSale = state.visits.filter(v => Object.keys(v.items).length > 0).length;
+  const conv = state.visits.length > 0 ? Math.round((visitsWithSale / state.visits.length) * 100) : 0;
+  document.getElementById('conversion').textContent = conv + '%';
+
+  const clientList = document.getElementById('clientList');
+  clientList.innerHTML = '';
+  if(state.visits.length === 0){
+    clientList.innerHTML = '<div class="no-clients">Todavía no registras clientes hoy</div>';
+  } else {
+    [...state.visits].reverse().forEach(v => {
+      const itemIds = Object.keys(v.items);
+      let visitTotal = 0;
+      let lines = [];
+      itemIds.forEach(pid => {
+        const p = findProduct(pid);
+        visitTotal += itemGanancia(p, v.items[pid]);
+        lines = lines.concat(describeItem(p, v.items[pid]));
+      });
+      const url = locationUrl(v);
+      const mapsLink = url
+        ? `<a class="client-map" href="${url}" target="_blank" rel="noopener">📍 Ver ubicación en el mapa</a>`
+        : '<span class="client-map" style="color:#a89f8e;">Sin ubicación</span>';
+      const card = document.createElement('div');
+      card.className = 'client-card';
+      card.innerHTML = `
+        <div class="client-top">
+          <div>
+            <div class="client-name">${v.name}</div>
+            ${mapsLink}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="client-ganancia">${visitTotal > 0 ? '$'+Math.round(visitTotal).toLocaleString('es-MX') : ''}</div>
+            <button class="client-del" onclick="deleteVisit('${v.id}')">✕</button>
+          </div>
+        </div>
+        <div class="client-items ${lines.length ? '' : 'client-empty'}">${lines.length ? lines.join('<br>') : 'No compró nada'}</div>
+      `;
+      clientList.appendChild(card);
+    });
+  }
+
+  const deliveryWrap = document.getElementById('deliveryWrap');
+  deliveryWrap.innerHTML = '';
+  let anyDelivery = false;
+  PRODUCTS.forEach(p => {
+    const data = deliveryTotals[p.id];
+    const hasAny = itemUnits(p, data) > 0;
+    if(!hasAny) return;
+    anyDelivery = true;
+    let rows = '';
+    if(typeof data === 'number'){
+      rows += `<div class="delivery-row"><span>${p.name}</span><span class="qty-badge">${data}</span></div>`;
+    } else {
+      if(data.box > 0) rows += `<div class="delivery-row"><span>Cajas completas</span><span class="qty-badge">${data.box}</span></div>`;
+      if(data.colors){
+        COLORS.forEach(c => { if(data.colors[c] > 0) rows += `<div class="delivery-row"><span>Pieza ${c}</span><span class="qty-badge">${data.colors[c]}</span></div>`; });
+      }
+      if(data.loose > 0) rows += `<div class="delivery-row"><span>Piezas sueltas</span><span class="qty-badge">${data.loose}</span></div>`;
+    }
+    const group = document.createElement('div');
+    group.className = 'delivery-group';
+    group.innerHTML = `<h3>${p.name}</h3>${rows}`;
+    deliveryWrap.appendChild(group);
+  });
+  if(!anyDelivery){
+    deliveryWrap.innerHTML = '<div class="delivery-group"><div class="no-clients">Aún no hay ventas para entregar</div></div>';
+  }
+}
+
+// --- Descargar resumen ---
+function escapeHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function downloadSummary(){
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  let total = 0;
+  let units = 0;
+  const visitsWithSale = state.visits.filter(v => Object.keys(v.items).length > 0).length;
+  const routeUrl = buildRouteUrl();
+
+  let clientsHtml = '';
+  if(state.visits.length === 0){
+    clientsHtml = '<p class="empty">No se registraron visitas hoy.</p>';
+  } else {
+    state.visits.forEach((v, idx) => {
+      const itemIds = Object.keys(v.items);
+      let visitTotal = 0;
+      let itemLines = [];
+      itemIds.forEach(pid => {
+        const p = findProduct(pid);
+        visitTotal += itemGanancia(p, v.items[pid]);
+        units += itemUnits(p, v.items[pid]);
+        itemLines = itemLines.concat(describeItem(p, v.items[pid]));
+      });
+      total += visitTotal;
+
+      const hora = new Date(v.time).toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+      const url = locationUrl(v);
+      const mapsLink = url
+        ? `<a href="${url}" target="_blank">Ver ubicación en el mapa</a>`
+        : '<span class="muted">Ubicación no registrada</span>';
+
+      const productosHtml = itemLines.length
+        ? `<ul>${itemLines.map(l => `<li>${escapeHtml(l)}</li>`).join('')}</ul>`
+        : '<p class="muted">No compró nada</p>';
+
+      clientsHtml += `
+        <div class="client">
+          <div class="client-head">
+            <div>
+              <div class="client-num">Cliente ${idx + 1}</div>
+              <div class="client-name">${escapeHtml(v.name)}</div>
+              <div class="muted">${hora} · ${mapsLink}</div>
+            </div>
+            ${visitTotal > 0 ? `<div class="client-total">$${Math.round(visitTotal).toLocaleString('es-MX')}</div>` : ''}
+          </div>
+          ${productosHtml}
+        </div>
+      `;
+    });
+  }
+
+  const routeButtonHtml = routeUrl
+    ? `<a class="route-link" href="${routeUrl}" target="_blank">🚚 Abrir ruta de entrega con todos los clientes</a>`
+    : '';
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resumen de ventas - ${dateLabel}</title>
+<style>
+  body{ font-family:-apple-system,"Segoe UI",Roboto,sans-serif; background:#faf6ee; color:#1c1917; margin:0; padding:0 0 40px; }
+  header{ background:#1c1917; color:#fff; padding:24px 20px; }
+  header h1{ margin:0 0 4px; font-size:22px; }
+  header p{ margin:0; opacity:0.7; font-size:14px; text-transform:capitalize; }
+  .totals{ display:flex; gap:10px; margin:16px 20px; }
+  .totals .box{ flex:1; background:#fff; border-radius:12px; padding:14px 10px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .totals .box .n{ font-size:20px; font-weight:800; }
+  .totals .box .l{ font-size:11px; color:#8a8071; text-transform:uppercase; }
+  .ganancia-total{ margin:0 20px 14px; background:#4b7f52; color:#fff; border-radius:14px; padding:18px 20px; text-align:center; }
+  .ganancia-total .n{ font-size:34px; font-weight:800; }
+  .ganancia-total .l{ font-size:13px; opacity:0.9; }
+  .route-link{ display:block; margin:0 20px 20px; background:#a86a02; color:#fff; text-align:center; padding:13px; border-radius:12px; font-weight:800; text-decoration:none; font-size:14.5px; }
+  h2.section{ margin:24px 20px 10px; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:#8a8071; }
+  .client{ margin:0 20px 12px; background:#fff; border-radius:14px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .client-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+  .client-num{ font-size:11px; color:#a86a02; font-weight:700; text-transform:uppercase; }
+  .client-name{ font-size:18px; font-weight:800; }
+  .client-total{ font-size:17px; font-weight:800; color:#4b7f52; white-space:nowrap; }
+  .muted{ color:#8a8071; font-size:12.5px; }
+  .empty{ margin:0 20px; color:#a89f8e; }
+  ul{ margin:8px 0 0; padding-left:18px; }
+  li{ font-size:14px; margin-bottom:4px; }
+  a{ color:#a86a02; }
+  @media print{ body{background:#fff;} .client{box-shadow:none;border:1px solid #e5ddcc;} }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Resumen de ventas</h1>
+    <p>${dateLabel}</p>
+  </header>
+
+  <div class="totals">
+    <div class="box"><div class="n">${state.visits.length}</div><div class="l">Visitados</div></div>
+    <div class="box"><div class="n">${visitsWithSale}</div><div class="l">Compraron</div></div>
+    <div class="box"><div class="n">${units}</div><div class="l">Unidades</div></div>
+  </div>
+
+  <div class="ganancia-total">
+    <div class="n">$${Math.round(total).toLocaleString('es-MX')}</div>
+    <div class="l">Ganancia total del día</div>
+  </div>
+
+  ${routeButtonHtml}
+
+  <h2 class="section">Detalle por cliente</h2>
+  ${clientsHtml}
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `resumen-ventas-${now.toISOString().slice(0,10)}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+loadState();
+</script>
+</body>
+</html>
