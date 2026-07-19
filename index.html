@@ -289,7 +289,7 @@ function updateOpenLocLink(){
 
 // --- Ruta de entrega ---
 function buildRouteUrl(){
-  const stops = state.visits.filter(v => locationQuery(v));
+  const stops = state.visits.filter(v => Object.keys(v.items).length > 0 && locationQuery(v));
   if(stops.length === 0) return null;
   if(stops.length === 1) return locationUrl(stops[0]);
   const destination = encodeURIComponent(locationQuery(stops[stops.length-1]));
@@ -306,19 +306,39 @@ function openRoute(e){
   window.open(url, '_blank');
 }
 
+const storageBackend = {
+  async get(key){
+    if(typeof window.storage !== 'undefined' && window.storage){
+      try{
+        const res = await window.storage.get(key);
+        return res ? res.value : null;
+      }catch(e){ return null; }
+    }
+    try{ return localStorage.getItem(key); }
+    catch(e){ return null; }
+  },
+  async set(key, value){
+    if(typeof window.storage !== 'undefined' && window.storage){
+      try{ await window.storage.set(key, value); return; }
+      catch(e){ /* sigue abajo como respaldo */ }
+    }
+    try{ localStorage.setItem(key, value); }
+    catch(e){ console.error('No se pudo guardar', e); }
+  }
+};
+
 async function loadState(){
   try{
-    const res = await window.storage.get(todayKey());
-    if(res && res.value){
-      const parsed = JSON.parse(res.value);
+    const value = await storageBackend.get(todayKey());
+    if(value){
+      const parsed = JSON.parse(value);
       if(parsed && Array.isArray(parsed.visits)) state.visits = parsed.visits;
     }
   }catch(e){ /* sin datos guardados aun */ }
   render();
 }
 async function saveState(){
-  try{ await window.storage.set(todayKey(), JSON.stringify(state)); }
-  catch(e){ console.error('No se pudo guardar', e); }
+  await storageBackend.set(todayKey(), JSON.stringify(state));
 }
 
 function changeBox(pid, delta){
@@ -490,10 +510,11 @@ function render(){
 
   const clientList = document.getElementById('clientList');
   clientList.innerHTML = '';
-  if(state.visits.length === 0){
-    clientList.innerHTML = '<div class="no-clients">Todavía no registras clientes hoy</div>';
+  const visitsToShow = state.visits.filter(v => Object.keys(v.items).length > 0);
+  if(visitsToShow.length === 0){
+    clientList.innerHTML = '<div class="no-clients">Todavía no registras ventas hoy</div>';
   } else {
-    [...state.visits].reverse().forEach(v => {
+    [...visitsToShow].reverse().forEach(v => {
       const itemIds = Object.keys(v.items);
       let visitTotal = 0;
       let lines = [];
@@ -568,10 +589,11 @@ function downloadSummary(){
   const routeUrl = buildRouteUrl();
 
   let clientsHtml = '';
-  if(state.visits.length === 0){
-    clientsHtml = '<p class="empty">No se registraron visitas hoy.</p>';
+  const visitsToShow = state.visits.filter(v => Object.keys(v.items).length > 0);
+  if(visitsToShow.length === 0){
+    clientsHtml = '<p class="empty">No se registraron ventas hoy.</p>';
   } else {
-    state.visits.forEach((v, idx) => {
+    visitsToShow.forEach((v, idx) => {
       const itemIds = Object.keys(v.items);
       let visitTotal = 0;
       let itemLines = [];
